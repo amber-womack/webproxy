@@ -1,0 +1,46 @@
+CS5273 Network Systems
+Fall 2015
+University of Colorado Boulder
+Programming Assignment 3
+Webproxy with Caching
+
+By Amber Womack
+
+Inspired by work from BeeJ's and Vivan Ramachandran for basic echoSever code provided. 
+
+---Folders---
+pa3 			- Assignment description and documentation, main encasing folder
+DFS Folders 	- folders that will be created when running the program with subfolders inside for username and subfoldering
+
+---Files---
+README        	- This file
+webproxy.c     	- The proxy used to forward the request, from the client, to the server. Then receives the response from the server and forwards the response to the client. 
+
+
+---Executables---
+Makefile 		- will make or build the files and execute
+webproxy		- Middleman executable for webproxy.c
+
+---Documentation---
+Programming assignment3.pdf - Assignment Instructions and Tips
+https://www.cs.princeton.edu/courses/archive/spring07/cos461/web_proxy.html for further explanation of the assignment
+
+---Building---
+To run the program, go to the correct zipped folder or pa2 assignment
+Run on command line: $ gcc webproxy.c -o webproxy - to compile
+Run the executable: $ ./webproxy 10001 &
+OR you can run a make clean, make, and then run the executables for both client and server
+
+---Specific Funcitons---
+Main() - main execution of the server side
+
+
+
+
+---General Description---
+The purpose of this assignment was to create a distributed file system which is a client / server program that allows the client to store and retreive files on multiple servers. The file was split into 4 pieces and stored on these 4 serves with 2 chunks on each. One client is uploading and downloading files to and from these 4 servers in order to create redundancy. These files were placed on the particular 4 servers via a MD5HASH function/library. The program incorporates the use of GET, PUT, LIST, and MKDIR requests in order to assisting in the uploading, downloading, and accessing each of these files. The configuration files are used for username and password authorization of the client/server due to the encrypted functionality incorportated. There is an ability to have multiple connection handling, timeouts, reliability through redundacy, file piece handling, privacy through encryption, data encryption, and subfoldering. 
+
+
+
+
+
