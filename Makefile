@@ -1,10 +1,10 @@
-all: webproxy
+all: proxy
 
-dfc: webproxy.c
-	gcc webproxy.c -o webproxy
+dfc: proxy.c
+	gcc proxy.c -o proxy
 
 .PHONY: clean
 
 clean:
-	rm -f webproxy
+	rm -f proxy
 
