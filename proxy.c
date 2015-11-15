@@ -15,6 +15,7 @@
 #include <sys/wait.h>
 #include <signal.h> //for forking
 #include <sys/poll.h> //for the timer function
+#include </usr/local/include/openssl/md5.h>
 
 #define ERROR -1 //the error
 #define MAX_CLIENTS 10 // max clients to have in wait queue, listen call used by kernel
@@ -30,41 +31,31 @@ struct sockaddr_in client;
 // SOCKET SIZE
 unsigned int sockaddr_len;
 
-
+typedef struct node { // singly linked list
+	char * hashValue;
+	struct node* next; 
+} node;
 
 
 // ------------- FUNCTIONS -------------
 // MD5 HASH
-int hash(char * filename){
+char *hash(char * URL, int *md5int){
+	
+	MD5_CTX mdContext;
+	char * md5string =  calloc(33, 1);
+    unsigned char digest[MD5_DIGEST_LENGTH];
+  
+    MD5_Init(&mdContext);
+    MD5_Update(&mdContext, URL, strlen(URL));
+    MD5_Final(digest,&mdContext);
 
-    int bytes;
-    unsigned char data[1024];
-    //int i = 0;
-    int md5hash;
-    unsigned char c[MD5_DIGEST_LENGTH];
-    //char *filename="1.txt";
-    FILE *inFile = fopen (filename, "rb");
-    MD5_CTX mdContext;
-    //md5 hash of a large file, provided the string 
-    if (inFile == NULL) {
-        printf ("%s can't be opened.\n", filename);
-        return 0;
-    }
-    MD5_Init (&mdContext);
-    while ((bytes = fread (data, 1, 1024, inFile)) != 0){
-        MD5_Update (&mdContext, data, bytes);
-    }
-    MD5_Final (c,&mdContext);
-    // while(i < MD5_DIGEST_LENGTH) 
-    // {
-    //     printf("%02x\n", c[i]);
-    //     i++;
-    // }
-    md5hash = c[MD5_DIGEST_LENGTH - 1] % 4;
-    //printf ("\n%d\n", md5hash);
-    //printf ("%s\n", filename);
-    fclose (inFile);
-    return md5hash;
+    *md5int = digest;
+	for(int i = 0; i < 16; ++i)
+	    sprintf(&md5string[i*2], "%02x", (unsigned int)digest[i]);
+
+	printf("Hash Value is %s\n", md5string);
+
+    return md5string;
 }
 
 // SERVER SOCKET
@@ -195,8 +186,22 @@ int connectport(const char *portnumber, char *URL){
     return sock;
 }
 
+int cacheResponse(char * URL){
+	int hashValInt;
+	char  *hashValChar;
+
+	hashValChar = hash(URL, &hashValInt);
+
+	node nodeArray[MAX_DATA];
+	//figure out what to do here.
+	
+
+	free(hashValChar);
+	return 0;
+}
+
 // FORWARD RESPONSE TO SERVER AND BACK TO CLIENT
-int forwarding(char *method, char *httpVersion, char *URL, int new, char *portnumber, char * data){
+int forwardingAndReturn(char *method, char *httpVersion, char *URL, char *URLCopy, int new, char *portnumber, char * data){
 
 	int remoteServer;
 	char *response = calloc(MAX_DATA, 1);
@@ -211,13 +216,15 @@ int forwarding(char *method, char *httpVersion, char *URL, int new, char *portnu
 	//else{
 
 	// SEND GET HEADER FROM CLIENT
-		send(remoteServer, data, strlen(data), 0);
+	send(remoteServer, data, strlen(data), 0);
 	//}
 
 	// READ RESPONSE FROM REMOTE SERVER
 	read(remoteServer, response, MAX_DATA);
 
-	// HASH THE VALUE
+	// CACHE THE RESPONSE
+	printf("URLCopy %s\n", URLCopy);
+	cacheResponse(URLCopy);
 
 	printf("%s\n", response);
 
@@ -280,15 +287,16 @@ int main(int argc, char *argv[]){
 					}
 					printf("%s\n", header);
 
-					char URLCopy[strlen(URL)];
-					strcpy(URLCopy, URL);
-
 					// PARSE HEADER 
 					strcpy(headerCopy,header); // COPY FOR STRTOK
 					memcpy(requestLine, strtok(headerCopy,"\n"),256);
 					memcpy(method, strtok(requestLine," "), 256); 	// GET/PUT/LIST
 					memcpy(URL, strtok(NULL," "), 256);				// www.yahoo.com
 					memcpy(httpVersion, strtok(NULL," "), 256);		// HTTP/1.0
+
+					char URLCopy[strlen(URL)];
+					strcpy(URLCopy, URL);
+					printf("URLCopy %s\n", URLCopy);
 
 					// CHECK URL
 					int errURL = 1;
@@ -302,7 +310,7 @@ int main(int argc, char *argv[]){
 							printf("Wrong URL\n");
 						}
 						else{
-							forwarding(method, httpVersion, URL, new, argv[1], header);
+							forwardingAndReturn(method, httpVersion, URL, URLCopy, new, argv[1], header);
 						}
 					}
 					else{
