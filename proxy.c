@@ -31,11 +31,11 @@ struct sockaddr_in client;
 // SOCKET SIZE
 unsigned int sockaddr_len;
 
-typedef struct node { // singly linked list
-	char * hashValue;
-	struct node* next; 
-} node;
-
+// typedef struct node { // singly linked list
+// 	char * hashValue;
+// 	struct node* next; 
+// } node;
+char * hashArray[MAX_DATA];
 
 // ------------- FUNCTIONS -------------
 // MD5 HASH
@@ -49,7 +49,7 @@ char *hash(char * URL, int *md5int){
     MD5_Update(&mdContext, URL, strlen(URL));
     MD5_Final(digest,&mdContext);
 
-    *md5int = digest;
+    //*md5int = digest;
 	for(int i = 0; i < 16; ++i)
 	    sprintf(&md5string[i*2], "%02x", (unsigned int)digest[i]);
 
@@ -192,9 +192,15 @@ int cacheResponse(char * URL){
 
 	hashValChar = hash(URL, &hashValInt);
 
-	node nodeArray[MAX_DATA];
+	///node nodeArray[MAX_DATA];
 	//figure out what to do here.
-	
+	for(int i = 0; i < MAX_DATA - 1; i++){
+		if(strcmp(hashArray[i], "00000000000000000000000000000000") == 0){
+			hashArray[i] = hashValChar;
+			printf("Hash Value Char is %s\n", hashArray[i]);
+			break;	
+		}
+	}
 
 	free(hashValChar);
 	return 0;
@@ -310,7 +316,15 @@ int main(int argc, char *argv[]){
 							printf("Wrong URL\n");
 						}
 						else{
+							for(int i = 0; i < MAX_DATA - 1; i++){
+								hashArray[i] = "00000000000000000000000000000000";
+							}
 							forwardingAndReturn(method, httpVersion, URL, URLCopy, new, argv[1], header);
+							printf("Array\n");
+							for(int i = 0; i < MAX_DATA - 1; i++){
+								if(strcmp(hashArray[i], "00000000000000000000000000000000") != 0)
+									printf("%s\n", hashArray[i]);
+							}
 						}
 					}
 					else{
